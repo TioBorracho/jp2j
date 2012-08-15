@@ -6,9 +6,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -26,6 +28,7 @@ import org.apache.log4j.Logger;
  * 
  */
 public class JsonpRequestWrapper extends HttpServletRequestWrapper {
+	static List<String> hiddenHeaders =  Arrays.asList("if-none-match", "if-modified-since");
 
 	@Override
 	@SuppressWarnings("rawtypes")
@@ -33,6 +36,7 @@ public class JsonpRequestWrapper extends HttpServletRequestWrapper {
 		@SuppressWarnings("unchecked")
 		ArrayList<String> originales = Collections.list(super.getHeaderNames());
 		originales.add("Content-Type");
+		originales.removeAll(hiddenHeaders);
 		return Collections.enumeration(originales);
 	}
 
@@ -128,6 +132,8 @@ public class JsonpRequestWrapper extends HttpServletRequestWrapper {
 			return "application/json";
 		} else if (name.equalsIgnoreCase("Content-Type")) {
 			return "application/json";
+		} else if (hiddenHeaders.contains(name.toLowerCase())) {
+			return null;
 		} else {
 			return super.getHeader(name);
 		}
